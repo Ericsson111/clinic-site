@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {% if title %}
+        <title>博文门诊部 - {{ title }}</title>
+    {% else %}
+        <title>博文门诊部</title>
+    {% endif %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+</head>
+<body class="w3-light-grey">
+
+<!-- Top container -->
+<div class="w3-bar w3-top w3-black w3-large" style="z-index:4">
+  <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
+  <span class="w3-bar-item w3-right">博文门诊部</span>
+</div>
+
+<!-- Sidebar/menu -->
+<nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
+  <div class="w3-container w3-row">
+    <div class="w3-col s8 w3-bar"><hr>
+      <span>欢迎， {{ current_user.name }}</span><br>
+    </div>
+  </div>
+  <hr>
+  
+  <div class="w3-container">
+    <div class="w3-third">
+        <div class="w3-card w3-container" style="width: 270px; overflow: auto; overflow-x: hidden; height: 225px;">
+        <h3>公告</h3><br> 
+        {% if current_user.id == 1 %} 
+          <a class="navbar-brand mr-4" href="/add-announcement">添加公告</a><hr> 
+          {% else %} 
+          <p></p>
+          {% endif %}
+          <div class='content-section'>
+            {% for announcement in announcements %} 
+                <a class="mr-2" href="/announcement/{{ announcement.id }}">{{ announcement.title }}</a> 
+                <p class='text-muted'>{{ announcement.date_posted.strftime('%Y-%m-%d %H:%M') }}</p><hr>
+            {% endfor %}
+            <a class="mr-2" href="/explain">第一次来到此网站？ 点进来了解一下</a> 
+            <p class='text-muted'>2021-03-01 5:54</p><hr>
+          </div>
+      </div>
+    <h5>Dashboard</h5>
+  </div>
+  <div class="w3-bar-block">
+    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
+    <a href="/home-for/{{ current_user.name }}" class="w3-bar-item w3-button w3-padding w3-blue">主页</a>
+    <a href="{{ url_for('patient') }}" class="w3-bar-item w3-button w3-padding">患者</a>
+    <a href="{{ url_for('medicine_info') }}" class="w3-bar-item w3-button w3-padding">药品</a>
+    <a href="{{ url_for('worklog') }}" class="w3-bar-item w3-button w3-padding">工作日志</a>
+    <a href="/logout" class="w3-bar-item w3-button w3-padding">登出</a><br><br>
+    <footer class="site-footer">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-6 col-md-6">
+              <p class="copyright-text">Copyright &copy; 2021 博文门诊部
+            </div>
+          </div>
+          <hr>
+        </div>
+      
+      </div>
+      </div>
+      
+      </footer>
+  </div>
+</nav>
+<div class="w3-main" style="margin-left:300px;margin-top:43px;">
+<div style="text-align:center"><h3>医生信息</h3></div>
+<div class="content-section">
+  <div class="media">
+    <div class="media-body">
+      {% if user.id == current_user.id %}
+          <a class="nav-item nav-link" href="{{ url_for('reset_request') }}">更改医生密码</a>
+          {% endif %}
+      <p>医生姓名: {{ user.name }}</p><hr>
+       <p>性别: {{ user.gender }}</p><hr>
+       <p>电话号码: 
+        <script>
+            var number = "{{ user.number }}";
+            var part1 = number.slice(0, 3);
+            var part2 = number.slice(3, 7);
+            var part3 = number.slice(7, 11);
+            document.write(part1, '-', part2, '-', part3);
+          </script> 
+    </p> <hr>
+        <p>科室: {{ user.department }} </p>
+        <hr>
+        <p>邮箱: {{ user.email }}</p>
+        <hr>
+        <script>  
+          var dob = new Date("{{ user.create }}"); 
+          //calculate month difference from current date in time  
+          var month_diff = Date.now() - dob.getTime();  
+            
+          //convert the calculated difference in date format  
+          var age_dt = new Date(month_diff);   
+            
+          //extract year from date      
+          var year = age_dt.getUTCFullYear();  
+            
+          //now calculate the age of the user  
+          var age = Math.abs(year - 1970);  
+            
+          //display the calculated age  
+          document.write("入职时间: " + age + "年");  
+      </script> 
+      <hr>
+        <p>注册日期: {{ user.create.strftime('%Y-%m-%d %H:%M') }}</p>
+        <hr>
+      </div>
+      <br>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+</div>
+<script>
+    // Get the Sidebar
+    var mySidebar = document.getElementById("mySidebar");
+    
+    // Get the DIV with overlay effect
+    var overlayBg = document.getElementById("myOverlay");
+    
+    // Toggle between showing and hiding the sidebar, and add overlay effect
+    function w3_open() {
+      if (mySidebar.style.display === 'block') {
+        mySidebar.style.display = 'none';
+        overlayBg.style.display = "none";
+      } else {
+        mySidebar.style.display = 'block';
+        overlayBg.style.display = "block";
+      }
+    }
+    
+    // Close the sidebar with the close button
+    function w3_close() {
+      mySidebar.style.display = "none";
+      overlayBg.style.display = "none";
+    }
+    </script>
+</body>
+</html>

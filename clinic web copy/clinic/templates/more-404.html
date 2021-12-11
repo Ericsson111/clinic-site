@@ -1,0 +1,297 @@
+<html>
+    <style>
+        body {
+        margin: 0;
+        font-family: 'Share Tech', sans-serif;
+        font-size:16px;
+        color: #505050;
+        background:#eee;
+        overflow-x:hidden;
+    }
+    
+    main {
+        position:relative;
+        padding:7vh 0 10vh;
+        opacity:0;
+        margin-top:-5px;
+    }
+    
+    @media all and (min-width:670px) {
+        main { 
+            width: 570px;
+            margin-left: 10vw;
+        }
+    }
+    
+    @media all and (max-width:670px) {
+        main { margin:0 15px }
+    }
+    
+    .wave {
+        width:100vw;
+        height:150px;
+        position:fixed;
+        bottom:0;
+        fill:#1b7477;
+        z-index:-1;
+    }
+    
+    #one {
+        height:180px;
+        fill:#8adbd3;
+        width:120vw;
+        left:-10vw;
+    }
+    
+    h1, h2 {
+        position:relative;
+        display:flex;
+        align-items:center;
+        font-family:'Share Tech Mono', monospace;
+        line-height: 1em;
+        word-spacing:-.1em;
+        letter-spacing:-.05em;
+        transition:.2s all ease;
+        margin-left:10px;
+        margin-bottom:15px;
+    }
+    
+    h1 span, h2 span { 
+        background:rgba(238,238,238,.7);
+        padding:5px 7px;
+        border-radius:10px;
+        box-sizing:border-box;
+    }
+    h1, h2:active { color:#51b5ac; }
+    h1 { font-size:2.2em }
+    h2 { cursor:pointer }
+    p:first-child { margin-top:0 }
+    p:last-child { margin-bottom:0 }
+    
+    .subtext {
+        position:relative;
+        border-radius:10px;
+        background: white;
+        border:1px solid;
+        padding:13px;
+        line-height:1.5em;
+    }
+    
+    .subtext:not(#main) {
+        display:none;
+    }
+    
+    .subtext ul { margin:0; padding:0 25px; }
+    
+    .subtext a { 
+        color:#0a9; 
+        text-decoration:underline;
+        cursor:pointer;
+        transition:.2s all ease;
+    }
+    
+    .subtext a:hover, h2:hover {
+        color:#777;
+    }
+    
+    .subtext:before {
+        content:'';
+        position:absolute;
+        width:1px;
+        background:#bbb;
+        left:1.2em;
+        height:1.2em;
+        top:calc(-1.2em - 1px);
+    }
+    
+    .subtext.coll:before {
+        left:1em;
+        height:1.2em;
+        top:calc(-1.2em - 1px);
+    }
+    
+    .hex:hover {
+        transform:rotate(30deg);
+    }
+    
+    .hex, .hex:before, .hex:after {
+        height:1em;
+        width:.59em;
+        border:solid;
+        border-width:1px 0;
+        border-radius:2px;
+        box-sizing:border-box;
+    }
+    
+    main .hex { 
+        position:relative;
+        display:inline-block;
+        margin-right:.5em;
+        transition:.4s all ease;
+    }
+    
+    .hex:before, .hex:after {
+        content:'';
+        position:absolute;
+        margin-top:-1px;
+        margin-left:;
+    /*     color:#ccc; */
+    }
+    
+    .hex:before { transform:rotate(60deg); }
+    .hex:after { transform:rotate(-60deg); }
+    
+    .hex, .hex:before, .hex:after, .subtext {
+        border-color:#bbb;
+    }
+    
+    .hex.moved {
+        transform:rotate(30deg);
+    }
+    
+    #hex-holder {
+        position:fixed;
+        height:100vh;
+        width:100vw;
+        top:0;
+        z-index:-1;
+        pointer-events:none;
+        font-size:60px;
+    }
+    
+    #hex-holder .hex {
+        position:fixed;
+    }
+    
+    #uno {
+        border-radius:4px;
+        border:none;
+        background:#5b8b8c;
+        transform:rotate(-12deg);
+        bottom:30vh;
+        left:30px;
+    }
+    
+    #uno:before, #uno:after {
+        margin-top:0;
+    }
+    
+    #hex-holder .hex:before, #hex-holder .hex:after {
+        border:inherit;
+        border-radius:inherit;
+        background:inherit;
+    }
+    
+    #dos {
+        border-color:#1B7477;
+        border-radius:3px;
+        border-width:5px 0;
+        font-size:100px;
+        bottom:12vh;
+        right:-20px;
+        transform:rotate(7deg);
+    }
+    
+    #dos:before, #dos:after {
+        margin-top:-5px;
+    }
+    
+    #tres { display:none }
+    
+    #bg {
+    /*     z-index:100; */
+        position:fixed;
+        top:0;
+        height:100vh;
+        width:100vw;
+        box-sizing:border-box;
+        border:5px solid black;
+    }
+    </style>
+<head>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Share+Tech|Share+Tech+Mono" rel="stylesheet" />
+</head>
+
+<body onload="draw()">
+    <canvas id="bg"></canvas>
+    <main id="content">
+        <h1>
+            <div class="hex moved"></div><span>什么是404错误</span></h1>
+        <div class="subtext" id="main">
+            <p>HTTP 404或Not Found错误消息是HTTP的其中一种“标准回应消息”（HTTP状态码），此消息代表客户端在浏览网页时，服务器无法正常提供消息，或是服务器无法回应且不知原因。通常是因为用户所访问的对应网页已被删除、移动或从未存在。404也是互联网上最常见的错误之一。404错误消息可能与“server not found”（无法找到服务器）或其他类似消息产生混淆</p>
+        </div>
+        <h2>
+            <div class="hex"></div><span>为什么会有404错误</span></h2>
+        <div class="subtext coll">
+            404错误的产生有很多种原因，以下列出的两种是在测试期间普遍遇到的问题：<br>
+            1. 在患者病患信息里，如果您并未填写患者病患信息，导致系统因无法找到患者病情而产生的错误。如果再一次看到此情况，请先确认患者病患信息已填写完毕<br>
+            2. 第二种情况为网址输入错误，如果您输入了一个未知的网址，系统会默认把您带到404页面<br>
+        </div>
+        <h2>
+            <div class="hex"></div><span>如何避免此错误</span></h2>
+        <div class="subtext coll">
+            避免此错误的方法有很多种，以上两种是普遍适用于此网站的方法。若另有其他错误，务必发送邮箱至bowenclssp@gmail.com
+        </div>
+        <h2>
+            <div class="hex moved"></div><span>403错误</span></h1>
+        <div class="subtext" id="main">
+            403 Forbidden 是HTTP协议中的一个HTTP状态码（Status Code）。403状态码意为服务器成功解析请求但是客户端没有访问该资源的权限
+        </div>
+        
+        <h2>
+            <div class="hex"></div><span>403错误原由</span></h2>
+        <div class="subtext coll">
+            403错误的产生有很多原因，以下是遇到最多的错误原因：<br>
+            1. 在删除患者时，只有管理员才被给予删除的权限，药物也是一样。在没有管理员账户时，删除患者会触发此错误。
+        </div>
+        
+        <h2>
+            <div class="hex"></div><span>如果遇到的问题在以上都不存在</span></h2>
+        <div class="subtext coll">
+            请把屏幕截图，并给予详细的解释（哪个网址，什么错误）发到我的个人邮箱：bowenclssp@gmail.com<br>
+        </div>
+
+        <h2>
+
+            <div class="hex"></div><span>联系我们</span></h2>
+        <div class="subtext coll">
+            <ul>
+                <li>邮箱: bowenclssp@gmail.com</li>
+                <p class='text-muted'>暂时不支持微信</p>
+            </ul>
+        </div>
+    </main>
+    <svg viewBox="0 0 500 150" preserveAspectRatio="none" class="wave" id="one"><path d="M-13.36,88.98 C168.85,182.73 276.72,-73.84 506.31,79.10 L500.00,150.00 L0.00,150.00 Z"></path></svg>
+    <svg viewBox="0 0 500 150" preserveAspectRatio="none" class="wave" id="two"><path d="M-13.36,88.98 C168.85,182.73 276.72,-73.84 506.31,79.10 L500.00,150.00 L0.00,150.00 Z"></path></svg>
+    <div id="hex-holder">
+        <div class="hex" id="uno"></div>
+        <div class="hex" id="dos"></div>
+        <div class="hex" id="tres"></div>
+    </div>
+</body>
+<script>
+    function draw() {
+    var canvas = $('canvas')[0];
+    if(canvas.getContext) {
+        var ctx = canvas.getContext('2d');
+        ctx.fillStyle = 'rgb(200, 0, 0)';
+        ctx.fillRect(10, 10, 50, 50);
+        ctx.fillStyle = 'rgba(0, 0, 200, 0.5)';
+        ctx.fillRect(30, 30, 50, 50);
+    }
+}
+
+$(document).ready(function() {
+    // $(document).draw();
+    $('#content').animate({
+        opacity:1,
+        marginTop:'0',
+    }, 800);
+    $('h2').click(function() {
+        $(this).next('.subtext').slideToggle('fast');
+        $(this).children('.hex').toggleClass('moved');
+    })
+});
+</script>
+</html>

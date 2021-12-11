@@ -1,0 +1,9 @@
+Mon 11/15/2021 患者："Ericsson" 病患信息已被医生："Ericsson" 加入进数据库.
+Mon 11/15/2021 患者："Ericsson" 个人信息被医生："Ericsson" 更改.
+Tue 11/16/2021 患者："Ericsson" 病患信息已被医生："Ericsson" 加入进数据库.
+Tue 11/16/2021 患者："Ericsson" 病患信息已被医生："Ericsson" 加入进数据库.
+Wed 11/17/2021 患者："LI MEILAN" 病患信息已被医生："Ericsson" 加入进数据库.
+Wed 11/17/2021 患者："Ericsson1" 病患信息已被医生："Ericsson" 加入进数据库.
+Wed 11/17/2021 患者："bowen" 病患信息已被医生："Ericsson" 加入进数据库.
+Thu 11/18/2021 患者："Ericsson" 个人信息已被医生："Ericsson" 加入进数据库.
+Thu 11/18/2021 患者："deez" 个人信息已被医生："Ericsson" 加入进数据库.

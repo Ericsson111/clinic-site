@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {% if title %}
+        <title>博文门诊部 - {{ title }}</title>
+    {% else %}
+        <title>博文门诊部</title>
+    {% endif %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+</head>
+<body class="w3-light-grey">
+
+<!-- Top container -->
+<div class="w3-bar w3-top w3-black w3-large" style="z-index:4">
+  <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
+  <span class="w3-bar-item w3-right">博文门诊部</span>
+</div>
+
+<!-- Sidebar/menu -->
+<nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
+  <div class="w3-container w3-row">
+    <div class="w3-col s8 w3-bar">
+      <span>欢迎， {{ current_user.name }}</span><br>
+      <a href="#" class="w3-bar-item w3-button"><i class="fa fa-envelope"></i></a>
+      <a href="#" class="w3-bar-item w3-button"><i class="fa fa-user"></i></a>
+      <a href="#" class="w3-bar-item w3-button"><i class="fa fa-cog"></i></a>
+    </div>
+  </div>
+  <hr>
+  
+  <div class="w3-container">
+    <div class="w3-third">
+        <div class="w3-card w3-container" style="width: 270px; overflow: auto; overflow-x: hidden; height: 225px;">
+        <h3>公告</h3><br> 
+        {% if current_user.id == 1 %} 
+          <a class="navbar-brand mr-4" href="/add-announcement">添加公告</a><hr> 
+          {% else %} 
+          <p></p>
+          {% endif %}
+          <div class='content-section'>
+            {% for announcement in announcements %} 
+                <a class="mr-2" href="/announcement/{{ announcement.id }}">{{ announcement.title }}</a> 
+                <p class='text-muted'>{{ announcement.date_posted.strftime('%Y-%m-%d %H:%M') }}</p><hr>
+            {% endfor %}
+            <a class="mr-2" href="/explain">第一次来到此网站？ 点进来了解一下</a> 
+            <p class='text-muted'>2021-03-01 5:54</p><hr>
+          </div>
+      </div>
+    <h5>Dashboard</h5>
+  </div>
+  <div class="w3-bar-block">
+    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
+    <a href="/home-for/{{ current_user.name }}" class="w3-bar-item w3-button w3-padding w3-blue">主页</a>
+    <a href="{{ url_for('patient') }}" class="w3-bar-item w3-button w3-padding">患者</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding">药品</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding">工作日志</a>
+    <a href="/logout" class="w3-bar-item w3-button w3-padding">登出</a><br><br>
+    <footer class="site-footer">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-6 col-md-6">
+              <p class="copyright-text">Copyright &copy; 2021 博文门诊部
+            </div>
+          </div>
+          <hr>
+        </div>
+      
+      </div>
+      </div>
+      
+      </footer>
+  </div>
+</nav>
+
+
+<!-- Overlay effect when opening sidebar on small screens -->
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:300px;margin-top:43px;">
+
+  <!-- Header -->
+  <header class="w3-container" style="padding-top:22px">
+    <h5><b><i class="fa fa-dashboard"></i> 我的主页</b></h5>
+  </header>
+<div style="text-align:center">查找患者</h4></div>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+* {
+  box-sizing: border-box;
+}
+
+#myInput {
+  background-image: url('/css/searchicon.png');
+  background-position: 10px 12px;
+  background-repeat: no-repeat;
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+#myUL {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#myUL li a {
+  border: 1px solid #ddd;
+  margin-top: -1px; /* Prevent double borders */
+  background-color: #f6f6f6;
+  padding: 12px;
+  text-decoration: none;
+  font-size: 18px;
+  color: black;
+  display: block
+}
+
+#myUL li a:hover:not(.header) {
+  background-color: #eee;
+}
+</style>
+<body>
+
+  <input type="text" id="myInput" onkeyup="myFunction()" placeholder="请输入名称.." title="Type in a name">
+         <ul id ="myUL">
+            {% for item in values %}
+              <li><a href="/patient-info/{{ item.name }}">患者姓名: {{ item.name }} | 性别: {{ item.gender }} | 
+                <script>  
+                  var dob = new Date("{{ item.year }}-{{ item.month }}-{{ item.day }}"); 
+                  //calculate month difference from current date in time  
+                  var month_diff = Date.now() - dob.getTime();  
+                    
+                  //convert the calculated difference in date format  
+                  var age_dt = new Date(month_diff);   
+                    
+                  //extract year from date      
+                  var year = age_dt.getUTCFullYear();  
+                    
+                  //now calculate the age of the user  
+                  var age = Math.abs(year - 1970);  
+                    
+                  //display the calculated age  
+                  document.write("年龄: " + age + "岁");  
+              </script> 
+            | 手机号: {{ item.number }}</a></li><br>
+            {% endfor %}
+        </ul>
+
+        <script>
+          function myFunction() {
+              var input, filter, ul, li, a, i, txtValue;
+              input = document.getElementById("myInput");
+              filter = input.value.toUpperCase();
+              ul = document.getElementById("myUL");
+              li = ul.getElementsByTagName("li");
+              for (i = 0; i < li.length; i++) {
+                  a = li[i].getElementsByTagName("a")[0];
+                  txtValue = a.textContent || a.innerText;
+                  if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                      li[i].style.display = "";
+                  } else {
+                      li[i].style.display = "none";
+                  }
+              }
+          }
+          </script>
+</div>
+</div>
+</div>
+<script>
+    // Get the Sidebar
+    var mySidebar = document.getElementById("mySidebar");
+    
+    // Get the DIV with overlay effect
+    var overlayBg = document.getElementById("myOverlay");
+    
+    // Toggle between showing and hiding the sidebar, and add overlay effect
+    function w3_open() {
+      if (mySidebar.style.display === 'block') {
+        mySidebar.style.display = 'none';
+        overlayBg.style.display = "none";
+      } else {
+        mySidebar.style.display = 'block';
+        overlayBg.style.display = "block";
+      }
+    }
+    
+    // Close the sidebar with the close button
+    function w3_close() {
+      mySidebar.style.display = "none";
+      overlayBg.style.display = "none";
+    }
+    </script>
+</body>
+</html>

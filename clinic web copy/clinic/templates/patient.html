@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+  {% if title %}
+        <title>博文门诊部 - {{ title }}</title>
+    {% else %}
+        <title>博文门诊部</title>
+    {% endif %}
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+html,body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
+</style>
+</head>
+<body class="w3-light-grey">
+
+<!-- Top container -->
+<div class="w3-bar w3-top w3-black w3-large" style="z-index:4">
+  <button class="w3-bar-item w3-button w3-hide-large w3-hover-none w3-hover-text-light-grey" onclick="w3_open();"><i class="fa fa-bars"></i>  Menu</button>
+  <span class="w3-bar-item w3-right">博文门诊部</span>
+</div>
+
+<!-- Sidebar/menu -->
+<nav class="w3-sidebar w3-collapse w3-white w3-animate-left" style="z-index:3;width:300px;" id="mySidebar"><br>
+  <div class="w3-container w3-row">
+    <div class="w3-col s8 w3-bar">
+      <span>欢迎， {{ current_user.name }}</span><br>
+      <a href="#" class="w3-bar-item w3-button"><i class="fa fa-envelope"></i></a>
+      <a href="#" class="w3-bar-item w3-button"><i class="fa fa-user"></i></a>
+      <a href="#" class="w3-bar-item w3-button"><i class="fa fa-cog"></i></a>
+    </div>
+  </div>
+  <hr>
+  
+  <div class="w3-container">
+    <div class="w3-third">
+        <div class="w3-card w3-container" style="width: 270px; overflow: auto; overflow-x: hidden; height: 225px;">
+        <h3>公告</h3><br> 
+        {% if current_user.id == 1 %} 
+          <a class="navbar-brand mr-4" href="/add-announcement">添加公告</a><hr> 
+          {% else %} 
+          <p></p>
+          {% endif %}
+          <div class='content-section'>
+            {% for announcement in announcements %} 
+                <a class="mr-2" href="/announcement/{{ announcement.id }}">{{ announcement.title }}</a> 
+                <p class='text-muted'>{{ announcement.date_posted.strftime('%Y-%m-%d %H:%M') }}</p><hr>
+            {% endfor %}
+            <a class="mr-2" href="/explain">第一次来到此网站？ 点进来了解一下</a> 
+            <p class='text-muted'>2021-03-01 5:54</p><hr>
+          </div>
+      </div>
+    <h5>Dashboard</h5>
+  </div>
+  <div class="w3-bar-block">
+    <a href="#" class="w3-bar-item w3-button w3-padding-16 w3-hide-large w3-dark-grey w3-hover-black" onclick="w3_close()" title="close menu"><i class="fa fa-remove fa-fw"></i>  Close Menu</a>
+    <a href="/home-for/{{ current_user.name }}" class="w3-bar-item w3-button w3-padding">主页</a>
+    <a href="{{ url_for('patient') }}" class="w3-bar-item w3-button w3-padding w3-blue">患者</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding">药品</a>
+    <a href="#" class="w3-bar-item w3-button w3-padding">工作日志</a>
+    {% if current_user.id == 1 %}
+<div class='login-admin'>
+    <a href="/login-admin" class="w3-bar-item w3-button w3-padding">登录管理员空间</a>
+</div>
+{% else %} 
+{% endif %}
+    <a href="/logout" class="w3-bar-item w3-button w3-padding">登出</a><br><br>
+    <footer class="site-footer">
+        <div class="container">
+          <div class="row">
+            <div class="col-xs-6 col-md-6">
+              <p class="copyright-text">Copyright &copy; 2021 博文门诊部
+            </div>
+          </div>
+          <hr>
+        </div>
+      
+      </div>
+      </div>
+      
+      </footer>
+  </div>
+</nav>
+
+
+<!-- Overlay effect when opening sidebar on small screens -->
+<div class="w3-overlay w3-hide-large w3-animate-opacity" onclick="w3_close()" style="cursor:pointer" title="close side menu" id="myOverlay"></div>
+
+<!-- !PAGE CONTENT! -->
+<div class="w3-main" style="margin-left:300px;margin-top:43px;">
+  <style>
+    .myDiv {
+      border: 5px outset lightblue;
+      background-color: lightblue;
+      text-align: left;
+    }
+    </style>
+  <div class='content-section'>
+    <a class="mr-2" href="/addpatient">添加患者</a><br><a class="mr-2" href="/allpatient">查找患者</a>
+ </div>
+ <div class='myDiv'>
+       {% for patient in patients.items %} 
+         <a class="mr-2" href="/patient/{{ patient.subid }}">患者: {{ patient.name }}</a> 
+         <p class='text-muted'>时间: {{ patient.create.strftime('%Y-%m-%d %H:%M') }}</p><hr>
+       {% endfor %}
+   </div>
+     {% for page_num in patients.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
+     {% if page_num %}
+       {% if patients.page == page_num %}
+         <a class="btn btn-info mb-4" href="{{ url_for('patient', page=page_num) }}">{{ page_num }}</a>
+       {% else %}
+         <a class="btn btn-outline-info mb-4" href="{{ url_for('patient', page=page_num) }}">{{ page_num }}</a>
+       {% endif %}
+     {% else %}
+       ...
+     {% endif %}
+   {% endfor %}
+
+<script>
+    // Get the Sidebar
+    var mySidebar = document.getElementById("mySidebar");
+    
+    // Get the DIV with overlay effect
+    var overlayBg = document.getElementById("myOverlay");
+    
+    // Toggle between showing and hiding the sidebar, and add overlay effect
+    function w3_open() {
+      if (mySidebar.style.display === 'block') {
+        mySidebar.style.display = 'none';
+        overlayBg.style.display = "none";
+      } else {
+        mySidebar.style.display = 'block';
+        overlayBg.style.display = "block";
+      }
+    }
+    
+    // Close the sidebar with the close button
+    function w3_close() {
+      mySidebar.style.display = "none";
+      overlayBg.style.display = "none";
+    }
+    </script>
+</body>
+</html> 
