@@ -151,7 +151,24 @@ class PatientData():
 
 PatientData = PatientData([str(i)[2:-3] for i in db.session.query(Patient.subid)], [converter(str(i)[19:31]) for i in db.session.query(Patient.create)])
 PatientData.DatabaseToDictionary()
-print(PatientDictionary)
+
+class IncomeData():
+    def __init__(self, drip: int, medicine: int,  create: str):
+        self.self = self
+        self.drip = drip
+        self.medicine = medicine
+       
+    def DatabaseToDictionary(self):
+        arr = list(zip(sum(self.drip, self.medicine), self.create)) # error
+        for create, amount in arr:
+            if create in PatientDictionary.keys():
+                PatientDictionary[create].append(amount)
+            else:
+                PatientDictionary[create] = [] # create empty list for new key
+                PatientDictionary[create].append(amount)
+IncomeData = IncomeData([int(i) for i in db.session.query(Detail.drip)], [int(i) for i in db.session.query(Detail.medicine)], [converter(str(i)[19:31]) for i in db,session.query(Detail.Date_of_diagnosis)])
+IncomeData.DatabaseToDictionary()
+
 token = uuid.uuid4()
 token_dict = []
 token_dict.append(token)
