@@ -9,6 +9,11 @@ import uuid
 from flask_admin import Admin, BaseView, expose
 from flask_admin.contrib.sqla import ModelView
 import pandas as pd
+import base64
+from io import BytesIO
+from matplotlib.figure import Figure
+import os
+from dateutil.parser import parse
 
 admin = Admin(app, name="管理员")
 admin.add_view(ModelView(User, db.session, name="大夫")) 
@@ -40,7 +45,7 @@ def login():
 
 @app.route("/home-for/<string:name>", methods=['POST', 'GET'])
 @login_required 
-def doctor_information(name):   
+def doctor_information(name):
     user = User.query.filter_by(name=name).first_or_404()
     # Total new patient
     amount_patient = len(db.session.query(Patient.name).all())
@@ -56,8 +61,8 @@ def doctor_information(name):
     # Total patient for today
     time_1 = timedelta(days = 1) # filter last 4 weeks
     today = current_time - time_1 # start the counter 
-    filter_by_today = db.session.query(Patient.name).filter(Patient.create > today).all() # filter by the patient during this 4 weeks
-    filter_by_today_1 = len(list(dict.fromkeys(filter_by_today))) 
+    #filter_by_today = db.session.query(Patient.name).filter(Patient.create > today).all() # filter by the patient during this 4 weeks 
+    filter_by_today_1 = PatientData.AmountPatientToday()
     # Money spent
 
     today = current_time - time_1 # start the counter 
@@ -70,12 +75,13 @@ def doctor_information(name):
     Money_month_1 = sum(Money_month)
     # Money earn
 
-    Money_earn_today = [float(str(i)[2:-3]) for i in db.session.query(Detail.cost).filter(Detail.Date_of_diagnosis > today).all()]
-    Money_earn_today_1 = sum(Money_earn_today)
+    #Money_earn_today = [float(str(i)[2:-3]) for i in db.session.query(Detail.cost).filter(Detail.Date_of_diagnosis > today).all()]
+    Money_earn_today_1 = 0
 
     four_weeks_ago = current_time - time 
-    Money_earn_month = [float(str(i)[2:-3]) for i in db.session.query(Detail.cost).filter(Detail.Date_of_diagnosis > four_weeks_ago).all()]
-    Money_earn_month_1 = sum(Money_earn_month)
+    #Money_earn_month = [float(str(i)[2:-3]) for i in db.session.query(Detail.cost).filter(Detail.Date_of_diagnosis > four_weeks_ago).all()]
+    #Money_earn = [float(str(i)[2:-3]) for i in db.session.query(Detail.drip).filter(Detail.Date_of_diagnosis > four_weeks_ago).all()]
+    Money_earn_month_1 = 0
     return render_template('main.html', user=user, mylist1=mylist1, amount_patient=amount_patient, 
     filter_by_month_1=filter_by_month_1, filter_by_today_1=filter_by_today_1, Money_today_1=Money_today_1, Money_month_1=Money_month_1,
     Money_earn_1=Money_earn_today_1, Money_earn_month_1=Money_earn_month_1)    
@@ -87,37 +93,109 @@ def patient():
     patients = Patient.query.order_by(Patient.create.desc()).paginate(page=page, per_page=15) # posts were order by date, 20 posts each page
     return render_template('patient.html', patients=patients)
 
-id = uuid.uuid4()
+PatientDictionary = {}
+datarefreshLog = []
 
-def check(subid):
-    id_history = db.session.query(Patient.subid)
-    for i in id_history:
-        if subid in i:
-            subid = uuid.uuid4
-            return subid
+def converter(date: str) -> str:
+    if date[-1] == ',':
+        date = date[:-1]
+        return tuple(int(item) for item in date.split(', '))
+    else:
+        return tuple(int(item) for item in date.split(', '))
+
+class PatientData():
+    def __init__(self, subid: str, create: str) -> str:
+        self.self = self
+        self.subid = subid
+        self.create = create
+
+    def converter1(self, date: str) -> str:
+        return tuple(int(item) for item in date.split('-'))
+    
+    def DatabaseToDictionary(self):
+        arr = list(zip(self.create, self.subid))   
+        for create, subid in arr:
+            if create in PatientDictionary.keys():
+                PatientDictionary[create].append(subid)
+            else:
+                PatientDictionary[create] = [] # create empty list for new key
+                PatientDictionary[create].append(subid)
+
+    def save_data(self): # save to csv
+        arr = {'date':[],'patient':[], 'count':[]}
+        for key in PatientDictionary.keys():
+            arr['date'].append(key) # patient create date
+            arr['patient'].append(PatientDictionary[key]) # patient subid
+            arr['count'].append(len(PatientDictionary[key])) # amount patient
+        df = pd.DataFrame(arr, columns= ['date','patient', 'count'])
+        df.to_csv('patient.csv', index = True, header=True)
+    
+    def dataLogfunc():
+        now = datetime.now()
+        datarefreshLog.append(str(now)[11:13])
+
+    def refreshDictdata():
+        now = datetime.now()
+        if int(str(now)[11:13]) - int(datarefreshLog[-1]) >= 2:
+            PatientData.data()
         else:
-            return subid
+            pass
 
-patient = {}
-def data():
-    subid = [i for i in db.session.query(Patient.subid)]
-    create = [str(i)[19:31] for i in db.session.query(Patient.create)]
-    arr = list(zip(subid, create))
-    for i in arr:
-        if i[1] in patient.keys():
-            patient[i[1]].append(i[0])
-        else:
-            patient[i[1]] = list(i[0])  
+    def AmountPatientToday(self):
+        now = PatientData.converter1(str(datetime.now())[:10])
+        try:
+            return len(PatientDictionary[now]) 
+        except KeyError: 
+            PatientData.DatabaseToDictionary()
+            return 0
 
-def save_data():
-    arr = {'date':[],'patient':[]}
-    current = str(datetime.now())[19:31]
-    for key in patient.keys():
-        if key != current:
-            arr['date'].append(key)
-            arr['patient'].append(patient[key])
-            df = pd.DataFrame(arr, columns= ['date','patient'])
-            df.to_csv('patient.csv', index = True, header=True)
+PatientData = PatientData([str(i)[2:-3] for i in db.session.query(Patient.subid)], [converter(str(i)[19:31]) for i in db.session.query(Patient.create)])
+PatientData.DatabaseToDictionary()
+print(PatientDictionary)
+token = uuid.uuid4()
+token_dict = []
+token_dict.append(token)
+log = {}
+
+@app.route('/clinic-admin', methods=['GET','POST'])
+@login_required
+def clinic_admin():
+    if request.method == 'POST':
+        user = request.form.get('user')
+        password = request.form.get('password')
+        if user == 'admin' and password == '123':
+            now = datetime.now()
+            log[str(now)[11:13]] = user
+            return redirect('/clinic-admin/%s' % token_dict[-1])
+    return render_template('login.html')
+
+@app.route('/clinic-admin/%s' % token_dict[-1], methods=['GET','POST'])
+@login_required
+def clinic_admin_page():
+    now = datetime.now()
+    time = [i for i in log.keys()]
+    if int(str(now)[11:13]) - int(time[-1]) > 8:
+        return redirect('/clinic-admin')
+    fig = Figure()
+    data = pd.read_csv('patient.csv')
+    ax = fig.subplots()
+    x = data['date']
+    y = data['count']
+    ax.plot(x, y)
+    # Save it to a temporary buffer.
+    buf = BytesIO()
+    fig.savefig(buf, format="png")
+    # Embed the result in the html output.
+    data = base64.b64encode(buf.getbuffer()).decode("ascii")
+    return render_template("clinic_admin_page.html", image=data)
+
+a = uuid.uuid4()
+def checkValidsubId(subid: str) -> str: # subid should be unique value
+    Allsubid = list(db.session.query(Patient.subid))
+    while subid in Allsubid:
+        subid = uuid.uuid4()
+        return subid.hex
+    return subid
 
 @app.route("/addpatient", methods=['GET', 'POST']) 
 @login_required 
@@ -126,19 +204,20 @@ def addpatient():
     if form.validate_on_submit(): 
         patient1 = Patient(name=form.name.data, number=form.number.data, gender=form.gender.data, ID_Card=form.ID_Card.data, street=form.street.data)   
         ID = (patient1.ID_Card) 
-        subid = id.hex
+        subid = checkValidsubId(a.hex)
         patient = Patient(subid=subid, name=form.name.data, number=form.number.data, gender=form.gender.data, ID_Card=form.ID_Card.data, 
         year = ID[slice(6,10)], month = ID[slice(10, 12)], day = ID[slice(12, 14)], street=form.street.data, doctor=current_user)   
         db.session.add(patient) 
         db.session.commit()
+        PatientData.save_data()
+        now = PatientData.converter1(str(datetime.now())[:10])
+        PatientDictionary[now].append(subid)
         time = datetime.now()
         day = time.strftime("%A") 
         date = day[:3] 
         file = open('log.txt','a')
         file.writelines('%s %s/%s/%s 患者："%s" 个人信息已被医生："%s" 加入进数据库.\n' % (date, time.month, time.day, time.year, patient.name, patient.doctor.name))
         file.close()
-        data()
-        save_data()
         flash('此患者已被加入进数据库当中', 'success') 
         return redirect(url_for('patient')) 
     return render_template('add-patient.html', title='Add Patient', form=form) 
@@ -186,11 +265,13 @@ def delete_patient(subid):
         db.session.delete(patient)
         db.session.commit() 
         flash('此患者已被删除')
+    now = PatientData.converter1(str(datetime.now())[:10])
+    PatientDictionary[now].remove(str(subid))
     time = datetime.now()
     day = time.strftime("%A")
     date = day[:3] 
     file = open('log.txt','a')
-    file.writelines('%s %s/%s/%s 患者："%s" 个人/病患信息已被医生："%s" 删除.\n' % (date, time.month, time.day, time.year, patient.name, detail.user.name))
+    file.writelines('%s %s/%s/%s 患者："%s" 个人/病患信息已被医生："%s" 删除.\n' % (date, time.month, time.day, time.year, patient.name, patient.doctor.name))
     file.close()
     return redirect(url_for('patient')) 
 
@@ -242,6 +323,8 @@ def add_patient_detail(subid):
         df = pd.DataFrame(arr, columns= ['symptom','patient'])
         df.to_csv('patientSymptom.csv', index = True, header=True)
         time = datetime.now()
+        now = str(datetime.now())[:10].replace('-', ', ')
+        time1 = tuple(int(item) for item in now.split(', '))
         day = time.strftime("%A")
         date = day[:3] 
         file = open('log.txt','a')
